@@ -39,6 +39,7 @@ WORKDIR /app
 # this build context. This reaches into our previous image, finds
 # the binary we built, and pulls it into this container. Amazing!
 COPY --from=builder /go/src/github.com/ruprict/evalentine/consignment-cli/consignment-cli .
+COPY --from=builder /go/src/github.com/ruprict/evalentine/consignment-cli/consignment.json .
 
 # Run the binary as per usual! This time with a binary build in a
 # separate container, with all of the correct dependencies and

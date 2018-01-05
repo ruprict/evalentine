@@ -7,6 +7,7 @@ import (
 
 	micro "github.com/micro/go-micro"
 	pb "github.com/ruprict/evalentine/consignment-service/proto/consignment"
+	vesselProto "github.com/ruprict/evalentine/vessel-service/proto/vessel"
 )
 
 const (
@@ -39,7 +40,8 @@ func (repo *ConsignmentRepository) GetAll() []*pb.Consignment {
 
 // Service is, well, our service
 type service struct {
-	repo Repository
+	repo         Repository
+	vesselClient vesselProto.VesselServiceClient
 }
 
 // CreateConsignment is the service method. Saves to the repo
@@ -51,6 +53,17 @@ func (s *service) GetConsignments(ctx context.Context, req *pb.GetRequest, res *
 
 // GetConsignments is the service method. gets all from repo
 func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment, res *pb.Response) error {
+
+	vesselResponse, err := s.vesselClient.FindAvailable(context.Background(), &vesslProto.Specification{
+		MaxWeight: req.Weight,
+		Capacity:  int(len(req.Containers)),
+	})
+	log.Printf("Found vessel: %s \n", vesselResponse.Vessel.Name)
+	if err != nil {
+		return err
+	}
+
+	req.VesselId = vesselResponse.Vessel.Id
 	consignment, err := s.repo.Create(req)
 	if err != nil {
 		return err
@@ -66,9 +79,11 @@ func main() {
 		micro.Name("go.micro.srv.consignment"),
 		micro.Version("latest"),
 	)
+
+	vesselClient := vesselProto.NewVesselServiceClient("go.micro.srv.vessel", srv.Client())
 	srv.Init()
 
-	pb.RegisterShippingServiceHandler(srv.Server(), &service{repo})
+	pb.RegisterShippingServiceHandler(srv.Server(), &service{repo, vesselClient})
 
 	if err := srv.Run(); err != nil {
 		log.Fatalf("failed to serve: %v", err)
