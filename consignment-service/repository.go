@@ -23,13 +23,13 @@ type ConsignmentRepository struct {
 }
 
 // Create a new consignment
-func (repo *ConsignmentRepository) Create(consignment *pb.Consignment) {
+func (repo *ConsignmentRepository) Create(consignment *pb.Consignment) error {
 	return repo.collection().Insert(consignment)
 }
 
 // GetAll consignments
-func (repo *ConsignmentRepository) GetAll() ([]*pb.Collection, error) {
-	var consignments []*pb.Consignments
+func (repo *ConsignmentRepository) GetAll() ([]*pb.Consignment, error) {
+	var consignments []*pb.Consignment
 
 	err := repo.collection().Find(nil).All(&consignments)
 	return consignments, err
@@ -40,6 +40,6 @@ func (repo *ConsignmentRepository) Close() {
 	repo.session.Close()
 }
 
-func (repo *ConsignmentRepository) colleciton() *mgo.Collection {
+func (repo *ConsignmentRepository) collection() *mgo.Collection {
 	return repo.session.DB(dbName).C(consignmentCollection)
 }

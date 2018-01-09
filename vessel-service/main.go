@@ -29,6 +29,7 @@ func main() {
 	if host == "" {
 		host = defaultHost
 	}
+	fmt.Println("Default db host = ", host)
 
 	session, err := CreateSession(host)
 	defer session.Close()

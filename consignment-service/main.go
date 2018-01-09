@@ -25,8 +25,7 @@ func main() {
 
 	defer session.Close()
 
-	if e != nil {
-
+	if err != nil {
 		log.Panicf("Could not connect to DB with host %s - %v", host, err)
 	}
 
